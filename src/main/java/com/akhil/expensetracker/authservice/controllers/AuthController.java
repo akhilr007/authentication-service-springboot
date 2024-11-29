@@ -6,6 +6,7 @@ import com.akhil.expensetracker.authservice.services.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.WebUtils;
 
-import javax.naming.AuthenticationException;
-import java.net.http.HttpResponse;
 import java.util.Arrays;
 
 @RestController
@@ -70,17 +68,20 @@ public class AuthController {
 
     private ResponseEntity<LoginResponseDTO> getLoginResponseDTOResponseEntity(LoginResponseDTO loginResponseDTO,
                                                                                HttpServletResponse response) {
-
         String accessToken = loginResponseDTO.getAccessToken();
         Cookie accessCookie = new Cookie("accessToken", accessToken);
+        accessCookie.setPath("/");
         accessCookie.setHttpOnly(true);
         response.addCookie(accessCookie);
+        System.out.println("Access Cookie Path: " + accessCookie.getPath());
 
 
         String refreshToken = loginResponseDTO.getToken();
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+        refreshCookie.setPath("/");
         refreshCookie.setHttpOnly(true);
         response.addCookie(refreshCookie);
+        System.out.println("Refresh Cookie Path: " + refreshCookie.getPath());
 
         return ResponseEntity.ok(loginResponseDTO);
     }

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService userService;
@@ -32,8 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) {
         try {
             final String authorizationHeader = request.getHeader("Authorization");
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -46,12 +47,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String userId = jwtService.extractUserId(token);
             if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User user = userService.findByUserId(userId);
-                UsernamePasswordAuthenticationToken authenticationToken = new
-                        UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                if(jwtService.validateToken(token, user)) {
+                    UsernamePasswordAuthenticationToken authenticationToken = new
+                            UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
 
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    log.debug("Authentication set for user: {}", user.getEmail());
+                    log.info("Authentication set for user: {}", user.getEmail());
+                }
             }
+            filterChain.doFilter(request, response);
         } catch (Exception e) {
             exceptionResolver.resolveException(request, response, null, e);
         }

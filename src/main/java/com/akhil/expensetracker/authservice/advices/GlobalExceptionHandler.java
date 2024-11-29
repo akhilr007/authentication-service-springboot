@@ -1,5 +1,6 @@
 package com.akhil.expensetracker.authservice.advices;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -72,6 +74,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleInternalServerError(Exception exception){
+        log.error("Error in controller: {}", exception.getMessage());
         exception.printStackTrace();
         ApiError apiError = ApiError.builder()
                 .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR)

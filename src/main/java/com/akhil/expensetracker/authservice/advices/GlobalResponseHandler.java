@@ -13,12 +13,12 @@ public class GlobalResponseHandler implements ResponseBodyAdvice<Object> {
 
 
     @Override
-    public boolean supports(@NonNull MethodParameter returnType, @NonNull Class converterType) {
+    public boolean supports(MethodParameter returnType, Class converterType) {
         return true;
     }
 
     @Override
-    public Object beforeBodyWrite(Object body,@NonNull MethodParameter returnType,@NonNull MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+    public Object beforeBodyWrite(Object body,MethodParameter returnType, MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
 
         if(request.getURI().getPath().contains("/v3/api-docs")){
             return body;

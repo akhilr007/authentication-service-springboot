@@ -5,10 +5,10 @@ import com.akhil.expensetracker.authservice.services.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -19,8 +19,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class JwtService {
 
+    private final CustomUserDetailsService userDetailsService;
 
     @Value("${JWT.SECRET.KEY}")
     private String secretKey;
@@ -61,7 +64,8 @@ public class JwtService {
     }
 
     public Boolean validateToken(String token, UserDetails userDetails){
-        final String email = extractClaim(token, Claims::getSubject);
+        final String userId = extractClaim(token, Claims::getSubject);
+        final String email = userDetailsService.findByUserId(userId).getEmail();
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
